@@ -5,6 +5,22 @@
 （Electron 外壳在 `desktop/src/`，打包时把这个 zip 作为 `extraResources` 随包携带。）
 首启走上游正常 setup wizard（本目录**不含** OOB / UI 裁剪）。
 
+## Win7 SP1 x64 候选包
+
+`package-win7.py` 使用 `win7-compact` 导出的 CPython 3.12.16 x64 和基础
+依赖目录。`--additional` 传入其余按 `uv.lock` 安装并完成 Win7 适配的实体目录，
+`--wheel` 传入含已构建 Dashboard 的 Octop wheel。脚本拒绝相互覆盖的依赖文件，
+将第三方包放到解释器的 `Lib/site-packages`，以便启动时处理 `pywin32.pth`。
+
+```powershell
+python desktop/portable/package-win7.py --runtime <python-dir> --packages <packages-dir> --additional <additional-dir> --wheel <octop-wheel> --output <dist-dir>
+```
+
+验收时，从候选 ZIP 解包后执行 `smoke-win7.py <解包后的应用目录> <隔离测试目录>`。
+该探针验证 SQLite、Dashboard HTTP 入口和回环模型 API。使用已适配的 Electron
+组装桌面候选包时，将同一便携包的内容放在 `resources/sidecar`，以
+`smoke-win7-desktop.py <桌面应用目录> <隔离测试目录>` 验证 Dashboard 渲染。
+
 ## 与上游解耦
 
 本能力全部落在：
